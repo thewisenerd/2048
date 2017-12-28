@@ -118,6 +118,9 @@
       </div>
     </div>
 
+    <p>
+      <div id="timer"></div>
+    </p>
     <p class="game-explanation">
       <strong class="important">How to play:</strong> Use your <strong>arrow keys</strong> to move the tiles. When two tiles with the same number touch, they <strong>merge into one!</strong>
     </p>
@@ -169,6 +172,26 @@
 
     ga("create", "UA-42620757-2", "gabrielecirulli.github.io");
     ga("send", "pageview");
+  </script>
+
+  <script type="text/javascript">
+    function pretty(time) {
+      if (time < 0) {return "DNF";}
+      time = Math.round(time / 10);
+      var bits = time % 100;
+      time = (time - bits) / 100;
+      var secs = time % 60;
+      var mins = ((time - secs) / 60) % 60;
+      var hours = (time - secs - 60 * mins) / 3600;
+      var s = "" + bits;
+      if (bits < 10) {s = "0" + s;}
+      s = secs + "." + s;
+      if (secs < 10 && (mins > 0 || hours > 0)) {s = "0" + s;}
+      if (mins > 0 || hours > 0) {s = mins + ":" + s;}
+      if (mins < 10 && hours > 0) {s = "0" + s;}
+      if (hours > 0) {s = hours + ":" + s;}
+      return s;
+    }
   </script>
 </body>
 </html>

@@ -4,7 +4,10 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.storageManager = new StorageManager;
   this.actuator       = new Actuator;
 
+  this.timerStatus    = 0; //0 = no, 1 = first move made
   this.startTiles     = 2;
+  this.startTime      = null;
+  this.timerID        = null;
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -12,6 +15,27 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
 
   this.setup();
 }
+
+// Start the timer
+GameManager.prototype.startTimer = function() {
+  this.timerStatus = 1;
+  this.startTime = new Date()
+  this.timerID = setInterval( this.updateTimer, 10, this.startTime);
+};
+
+GameManager.prototype.endTime = function() {
+  clearInterval(this.timerID);
+  var curTime = new Date();
+  var time = curTime.getTime() - this.startTime.getTime();
+  document.getElementById("timer").innerHTML = pretty(time);
+};
+
+// Update the timer
+GameManager.prototype.updateTimer = function(startTime) {
+  var curTime = new Date();
+  var time = curTime.getTime() - startTime.getTime();
+  document.getElementById("timer").innerHTML = pretty(time);
+};
 
 // Restart the game
 GameManager.prototype.restart = function () {
@@ -49,6 +73,8 @@ GameManager.prototype.setup = function () {
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
+    this.timerStatus = 0;
+    clearInterval(this.timerID);
 
     // Add the initial tiles
     this.addStartTiles();
@@ -133,6 +159,10 @@ GameManager.prototype.move = function (direction) {
 
   if (this.isGameTerminated()) return; // Don't do anything if the game's over
 
+  if (this.timerStatus == 0) {
+    this.startTimer();
+  }
+
   var cell, tile;
 
   var vector     = this.getVector(direction);
@@ -167,7 +197,10 @@ GameManager.prototype.move = function (direction) {
           self.score += merged.value;
 
           // The mighty 2048 tile
-          if (merged.value === 2048) self.won = true;
+          if (merged.value === 2048) {
+            self.won = true;
+            self.endTime();
+          }
         } else {
           self.moveTile(tile, positions.farthest);
         }
@@ -183,7 +216,8 @@ GameManager.prototype.move = function (direction) {
     this.addRandomTile();
 
     if (!this.movesAvailable()) {
-      this.over = true; // Game over!
+      this.over = true;
+      this.endTime() // Game over!
     }
 
     this.actuate();
